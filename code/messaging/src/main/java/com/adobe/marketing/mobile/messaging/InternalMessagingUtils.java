@@ -57,17 +57,17 @@ import java.util.Map;
 class InternalMessagingUtils {
     private final static String SELF_TAG = "InternalMessagingUtils";
 
-    static List<MessagingProposition> getPropositionsFromPayloads(final List<Map<String, Object>> payloads) {
-        final List<MessagingProposition> messagingPropositions = new ArrayList<>();
+    static List<Proposition> getPropositionsFromPayloads(final List<Map<String, Object>> payloads) {
+        final List<Proposition> propositions = new ArrayList<>();
         for (final Map<String, Object> payload : payloads) {
             if (payload != null) {
-                final MessagingProposition messagingProposition = MessagingProposition.fromEventData(payload);
-                if (messagingProposition != null) {
-                    messagingPropositions.add(messagingProposition);
+                final Proposition proposition = Proposition.fromEventData(payload);
+                if (proposition != null) {
+                    propositions.add(proposition);
                 }
             }
         }
-        return messagingPropositions;
+        return propositions;
     }
 
     // ========================================================================================
@@ -235,16 +235,26 @@ class InternalMessagingUtils {
                 && DataReader.optBoolean(event.getEventData(), MessagingConstants.EventDataKeys.Messaging.GET_PROPOSITIONS, false);
     }
 
+    /**
+     * Determines if the passed in {@code Event} is a tracking proposition event
+     *
+     * @param event A Messaging Request Content {@link Event}.
+     * @return {@code boolean} indicating if the passed in event is a track propositions event.
+     */
+    static boolean isTrackingPropositionsEvent(final Event event) {
+        if (event == null || event.getEventData() == null) {
+            return false;
+        }
+
+        return EventType.MESSAGING.equalsIgnoreCase(event.getType())
+                && EventSource.REQUEST_CONTENT.equalsIgnoreCase(event.getSource())
+                && DataReader.optBoolean(event.getEventData(), MessagingConstants.EventDataKeys.Messaging.TRACK_PROPOSITIONS, false);
+    }
+
     // ========================================================================================
     // Surfaces retrieval and validation
     // ========================================================================================
 
-    /**
-     * Retrieves the app surfaces from the passed in {@code Event}'s event data.
-     *
-     * @param event A Messaging Request Content {@link Event}.
-     * @return {@code List<Surface>} containing the app surfaces to be used for retrieving propositions
-     */
     /**
      * Retrieves the app surfaces from the passed in {@code Event}'s event data.
      *

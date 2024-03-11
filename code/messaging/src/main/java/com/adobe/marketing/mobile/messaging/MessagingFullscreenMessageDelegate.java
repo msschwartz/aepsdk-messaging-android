@@ -12,7 +12,6 @@
 
 package com.adobe.marketing.mobile.messaging;
 
-import com.adobe.marketing.mobile.Message;
 import com.adobe.marketing.mobile.MessagingEdgeEventType;
 import com.adobe.marketing.mobile.services.Log;
 import com.adobe.marketing.mobile.services.ServiceProvider;
@@ -47,8 +46,11 @@ class MessagingFullscreenMessageDelegate implements FullscreenMessageDelegate {
     @Override
     public void onShow(final FullscreenMessage fullscreenMessage) {
         final InternalMessage message = (InternalMessage) fullscreenMessage.getParent();
-        if (message != null && message.getAutoTrack()) {
-            message.track(null, MessagingEdgeEventType.IN_APP_DISPLAY);
+        if (message != null) {
+            if (message.getAutoTrack()) {
+                message.track(null, MessagingEdgeEventType.DISPLAY);
+            }
+            message.recordEventHistory(null, MessagingEdgeEventType.DISPLAY);
         }
         Log.debug(MessagingConstants.LOG_TAG, SELF_TAG, "Fullscreen message shown.");
     }
@@ -61,8 +63,11 @@ class MessagingFullscreenMessageDelegate implements FullscreenMessageDelegate {
     @Override
     public void onDismiss(final FullscreenMessage fullscreenMessage) {
         final InternalMessage message = (InternalMessage) fullscreenMessage.getParent();
-        if (message != null && message.getAutoTrack()) {
-            message.track(null, MessagingEdgeEventType.IN_APP_DISMISS);
+        if (message != null) {
+            if (message.getAutoTrack()) {
+                message.track(null, MessagingEdgeEventType.DISMISS);
+            }
+            message.recordEventHistory(null, MessagingEdgeEventType.DISMISS);
         }
         Log.debug(MessagingConstants.LOG_TAG, SELF_TAG, "Fullscreen message dismissed.");
     }
@@ -112,7 +117,7 @@ class MessagingFullscreenMessageDelegate implements FullscreenMessageDelegate {
         final String queryParams;
         final String query = uri.getQuery();
         final MessageSettings messageSettings = fullscreenMessage.getMessageSettings();
-        final Message message = (Message) messageSettings.getParent();
+        final InternalMessage message = (InternalMessage) messageSettings.getParent();
 
         if (!StringUtils.isNullOrEmpty(query)) {
             try {
@@ -133,7 +138,8 @@ class MessagingFullscreenMessageDelegate implements FullscreenMessageDelegate {
                     final Object messagingExtension = message.getParent();
                     if (messagingExtension != null) {
                         Log.debug(MessagingConstants.LOG_TAG, SELF_TAG, "Tracking message interaction (%s)", interaction);
-                        message.track(interaction, MessagingEdgeEventType.IN_APP_INTERACT);
+                        message.track(interaction, MessagingEdgeEventType.INTERACT);
+                        message.recordEventHistory(interaction, MessagingEdgeEventType.INTERACT);
                     }
                 }
 
@@ -160,7 +166,7 @@ class MessagingFullscreenMessageDelegate implements FullscreenMessageDelegate {
 
         final String host = uri.getHost();
         if ((host.equals(MessagingConstants.QueryParameters.PATH_DISMISS)) || (host.equals(MessagingConstants.QueryParameters.PATH_CANCEL))) {
-            message.dismiss(true);
+            message.dismiss();
         }
 
         return true;
@@ -170,7 +176,8 @@ class MessagingFullscreenMessageDelegate implements FullscreenMessageDelegate {
     public void onBackPressed(final FullscreenMessage fullscreenMessage) {
         final InternalMessage message = (InternalMessage) fullscreenMessage.getParent();
         if (message != null) {
-            message.track(INTERACTION_BACK_PRESS, MessagingEdgeEventType.IN_APP_INTERACT);
+            message.track(INTERACTION_BACK_PRESS, MessagingEdgeEventType.INTERACT);
+            message.recordEventHistory(INTERACTION_BACK_PRESS, MessagingEdgeEventType.INTERACT);
         }
     }
 

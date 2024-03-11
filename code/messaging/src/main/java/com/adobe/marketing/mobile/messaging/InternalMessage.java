@@ -12,10 +12,13 @@
 
 package com.adobe.marketing.mobile.messaging;
 
+import static com.adobe.marketing.mobile.messaging.MessagingConstants.EventDataKeys.IAM_HISTORY;
 import static com.adobe.marketing.mobile.messaging.MessagingConstants.EventDataKeys.RulesEngine.MESSAGE_CONSEQUENCE_DETAIL_KEY_CONTENT;
 import static com.adobe.marketing.mobile.messaging.MessagingConstants.EventDataKeys.RulesEngine.MESSAGE_CONSEQUENCE_DETAIL_KEY_DATA;
 import static com.adobe.marketing.mobile.messaging.MessagingConstants.EventDataKeys.RulesEngine.MESSAGE_CONSEQUENCE_DETAIL_KEY_SCHEMA;
-import static com.adobe.marketing.mobile.messaging.MessagingConstants.EventDataKeys.RulesEngine.MESSAGE_CONSEQUENCE_ID;
+import static com.adobe.marketing.mobile.messaging.MessagingConstants.EventMask.Keys.EVENT_TYPE;
+import static com.adobe.marketing.mobile.messaging.MessagingConstants.EventMask.Keys.MESSAGE_ID;
+import static com.adobe.marketing.mobile.messaging.MessagingConstants.EventMask.Keys.TRACKING_ACTION;
 import static com.adobe.marketing.mobile.messaging.MessagingConstants.SchemaValues.SCHEMA_IAM;
 
 import android.os.Handler;
@@ -79,7 +82,7 @@ class InternalMessage extends MessagingFullscreenMessageDelegate implements Mess
      * @param parent             {@link MessagingExtension} instance that created this Message
      * @param consequence        {@link com.adobe.marketing.mobile.launch.rulesengine.RuleConsequence} containing a {@code InternalMessage} defining payload
      * @param rawMessageSettings {@code Map<String, Object>} containing the raw message settings found in the "mobileParameters" present in the rule consequence
-     * @param assetMap           {@code Map<String, Object>} containing a mapping of a remote image asset URL and it's cached location
+     * @param assetMap           {@code Map<String, Object>} containing a mapping of a remote image asset URL and its cached location
      * @throws MessageRequiredFieldMissingException if the consequence {@code Map} fails validation.
      */
     InternalMessage(final MessagingExtension parent, final RuleConsequence consequence, final Map<String, Object> rawMessageSettings, final Map<String, String> assetMap) throws MessageRequiredFieldMissingException {
@@ -152,10 +155,17 @@ class InternalMessage extends MessagingFullscreenMessageDelegate implements Mess
      */
     public void track(final String interaction, final MessagingEdgeEventType eventType) {
         if (eventType == null) {
-            Log.debug(MessagingConstants.LOG_TAG, SELF_TAG, "Unable to record a message interaction, MessagingEdgeEventType was null.");
+            Log.debug(MessagingConstants.LOG_TAG, SELF_TAG, "Unable to send a proposition interaction, MessagingEdgeEventType was null.");
             return;
         }
-        messagingExtension.sendPropositionInteraction(interaction, eventType, this);
+        if (propositionInfo == null) {
+            Log.debug(MessagingConstants.LOG_TAG, SELF_TAG, "Unable to send a proposition interaction (%s), PropositionInfo is not found for message (%s)", eventType.getPropositionEventType(), id);
+            return;
+        }
+        final PropositionInteraction propositionInteraction = new PropositionInteraction(eventType,
+                interaction == null ? "" : interaction, propositionInfo, null, null);
+        final Map<String, Object> propositionInteractionXdm = propositionInteraction.getPropositionInteractionXDM();
+        messagingExtension.sendPropositionInteraction(propositionInteractionXdm);
     }
 
     /**
@@ -254,21 +264,21 @@ class InternalMessage extends MessagingFullscreenMessageDelegate implements Mess
         }
     }
 
-    public void dismiss(final boolean suppressAutoTrack) {
+    public void dismiss() {
         if (aepMessage != null) {
-            if (autoTrack && !suppressAutoTrack) {
-                track(null, MessagingEdgeEventType.IN_APP_DISMISS);
-            }
-
             aepMessage.dismiss();
         }
     }
 
+    /**
+     * Called when a {@code Message} is triggered - i.e. its conditional criteria have been met.
+     */
     void trigger() {
         if (aepMessage != null) {
             if (autoTrack) {
-                track(null, MessagingEdgeEventType.IN_APP_TRIGGER);
+                track(null, MessagingEdgeEventType.TRIGGER);
             }
+            recordEventHistory(null, MessagingEdgeEventType.TRIGGER);
         }
     }
 
@@ -290,6 +300,40 @@ class InternalMessage extends MessagingFullscreenMessageDelegate implements Mess
     @Override
     public void setAutoTrack(final boolean useAutoTrack) {
         this.autoTrack = useAutoTrack;
+    }
+
+    /**
+     * Dispatches an event to be recorded in Event History.
+     *
+     * @param interaction {@code String}  if provided, adds a custom interaction to the hash
+     * @param eventType {@link MessagingEdgeEventType} to be recorded
+     */
+    void recordEventHistory(final String interaction, final MessagingEdgeEventType eventType) {
+        if (eventType == null) {
+            Log.debug(MessagingConstants.LOG_TAG, SELF_TAG, "Unable to write event history event, MessagingEdgeEventType was null for message (%s).", id);
+            return;
+        }
+        if (propositionInfo == null) {
+            Log.debug(MessagingConstants.LOG_TAG, SELF_TAG, "Unable to write event history event (%s), PropositionInfo is not found for message (%s)", eventType.getPropositionEventType(), id);
+            return;
+        }
+        // create maps for event history
+        final Map<String, String> iamHistoryMap = new HashMap<>();
+        iamHistoryMap.put(EVENT_TYPE, eventType.getPropositionEventType());
+        iamHistoryMap.put(MESSAGE_ID, propositionInfo.activityId);
+        iamHistoryMap.put(TRACKING_ACTION, (StringUtils.isNullOrEmpty(interaction) ? "" : interaction));
+
+        // Create the mask for storing event history
+        final Map<String, Object> eventHistoryData = new HashMap<>();
+        eventHistoryData.put(IAM_HISTORY, iamHistoryMap);
+        final String[] mask = {MessagingConstants.EventMask.Mask.EVENT_TYPE, MessagingConstants.EventMask.Mask.MESSAGE_ID, MessagingConstants.EventMask.Mask.TRACKING_ACTION};
+
+        InternalMessagingUtils.sendEvent(MessagingConstants.EventName.EVENT_HISTORY_WRITE,
+                MessagingConstants.EventType.MESSAGING,
+                MessagingConstants.EventSource.EVENT_HISTORY_WRITE,
+                eventHistoryData,
+                mask,
+                messagingExtension.getApi());
     }
 
     /**

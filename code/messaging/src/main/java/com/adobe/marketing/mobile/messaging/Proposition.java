@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A {@link MessagingProposition} object encapsulates offers and the information needed for tracking offer interactions.
+ * A {@link Proposition} object encapsulates offers and the information needed for tracking offer interactions.
  */
-public class MessagingProposition implements Serializable {
+public class Proposition implements Serializable {
     private static final String SELF_TAG = "MessagingProposition";
     private static final String PAYLOAD_ID = "id";
     private static final String PAYLOAD_ITEMS = "items";
@@ -42,14 +42,14 @@ public class MessagingProposition implements Serializable {
     // Scope details map
     private final Map<String, Object> scopeDetails;
     // List containing proposition decision items
-    private final List<MessagingPropositionItem> messagingPropositionItems;
+    private final List<PropositionItem> propositionItems;
 
-    public MessagingProposition(final String uniqueId, final String scope, final Map<String, Object> scopeDetails, final List<MessagingPropositionItem> messagingPropositionItems) {
+    public Proposition(final String uniqueId, final String scope, final Map<String, Object> scopeDetails, final List<PropositionItem> propositionItems) {
         this.uniqueId = uniqueId;
         this.scope = scope;
         this.scopeDetails = scopeDetails;
-        this.messagingPropositionItems = messagingPropositionItems;
-        for (final MessagingPropositionItem item : this.messagingPropositionItems) {
+        this.propositionItems = propositionItems;
+        for (final PropositionItem item : this.propositionItems) {
             if (item.propositionReference == null) {
                 item.propositionReference = new SoftReference<>(this);
             }
@@ -59,7 +59,7 @@ public class MessagingProposition implements Serializable {
     /**
      * Gets the {@code MessagingProposition} identifier.
      *
-     * @return {@link String} containing the {@link MessagingProposition} identifier.
+     * @return {@link String} containing the {@link Proposition} identifier.
      */
     public String getUniqueId() {
         return uniqueId;
@@ -68,16 +68,16 @@ public class MessagingProposition implements Serializable {
     /**
      * Gets the {@code MessagingPropositionItem} list.
      *
-     * @return {@code List<MessagingPropositionItem>} containing the {@link MessagingPropositionItem}s.
+     * @return {@code List<MessagingPropositionItem>} containing the {@link PropositionItem}s.
      */
-    public List<MessagingPropositionItem> getItems() {
-        return messagingPropositionItems;
+    public List<PropositionItem> getItems() {
+        return propositionItems;
     }
 
     /**
      * Gets the {@code MessagingProposition} scope.
      *
-     * @return {@link String} containing the encoded {@link MessagingProposition} scope.
+     * @return {@link String} containing the encoded {@link Proposition} scope.
      */
     public String getScope() {
         return scope;
@@ -86,7 +86,7 @@ public class MessagingProposition implements Serializable {
     /**
      * Gets the {@code MessagingProposition} scope details.
      *
-     * @return {@code Map<String, Object>} containing the {@link MessagingProposition} scope details.
+     * @return {@code Map<String, Object>} containing the {@link Proposition} scope details.
      */
     public Map<String, Object> getScopeDetails() {
         return scopeDetails;
@@ -95,34 +95,34 @@ public class MessagingProposition implements Serializable {
     /**
      * Creates a {@code MessagingProposition} object from the provided {@code Map<String, Object>}.
      *
-     * @return {@link MessagingProposition} object created from the provided {@link Map<String, Object>}.
+     * @return {@link Proposition} object created from the provided {@link Map<String, Object>}.
      */
-    public static MessagingProposition fromEventData(final Map<String, Object> eventData) {
-        MessagingProposition messagingProposition = null;
+    public static Proposition fromEventData(final Map<String, Object> eventData) {
+        Proposition proposition = null;
         try {
             final String uniqueId = DataReader.getString(eventData, PAYLOAD_ID);
             final String scope = DataReader.getString(eventData, PAYLOAD_SCOPE);
             final Map<String, Object> scopeDetails = DataReader.getTypedMap(Object.class, eventData, PAYLOAD_SCOPE_DETAILS);
             final List<Map<String, Object>> items = DataReader.getTypedListOfMap(Object.class, eventData, PAYLOAD_ITEMS);
-            final List<MessagingPropositionItem> messagingPropositionItems = new ArrayList<>();
+            final List<PropositionItem> propositionItems = new ArrayList<>();
             for (final Map<String, Object> item : items) {
-                final MessagingPropositionItem messagingPropositionItem = MessagingPropositionItem.fromEventData(item);
-                if (messagingPropositionItem != null) {
-                    messagingPropositionItems.add(messagingPropositionItem);
+                final PropositionItem propositionItem = PropositionItem.fromEventData(item);
+                if (propositionItem != null) {
+                    propositionItems.add(propositionItem);
                 }
             }
-            messagingProposition = new MessagingProposition(uniqueId, scope, scopeDetails, messagingPropositionItems);
+            proposition = new Proposition(uniqueId, scope, scopeDetails, propositionItems);
         } catch (final DataReaderException dataReaderException) {
             Log.trace(LOG_TAG, SELF_TAG, "Exception occurred creating MessagingProposition from event data map: %s", dataReaderException.getLocalizedMessage());
         }
 
-        return messagingProposition;
+        return proposition;
     }
 
     /**
      * Creates a {@code Map<String, Object>} object from this {@code MessagingProposition}.
      *
-     * @return {@link Map<String, Object>} object created from this {@link MessagingProposition}.
+     * @return {@link Map<String, Object>} object created from this {@link Proposition}.
      */
     public Map<String, Object> toEventData() {
         final Map<String, Object> eventData = new HashMap<>();
@@ -130,16 +130,16 @@ public class MessagingProposition implements Serializable {
         eventData.put(PAYLOAD_SCOPE, this.scope);
         eventData.put(PAYLOAD_SCOPE_DETAILS, this.scopeDetails);
         final List<Map<String, Object>> items = new ArrayList<>();
-        for (final MessagingPropositionItem messagingPropositionItem : this.messagingPropositionItems) {
-            items.add(messagingPropositionItem.toEventData());
+        for (final PropositionItem propositionItem : this.propositionItems) {
+            items.add(propositionItem.toEventData());
         }
         eventData.put(PAYLOAD_ITEMS, items);
         return eventData;
     }
 
     public boolean equals(final Object object) {
-        if (object instanceof MessagingProposition) {
-            final MessagingProposition proposition = (MessagingProposition) object;
+        if (object instanceof Proposition) {
+            final Proposition proposition = (Proposition) object;
             final Map<String, Object> newPropositionContent = proposition.getItems().get(0).getData();
             final Map<String, Object> propositionContent = this.getItems().get(0).getData();
             return newPropositionContent.equals(propositionContent);

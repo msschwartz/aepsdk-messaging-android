@@ -521,11 +521,11 @@ public class MessagingTestUtils {
         return payload;
     }
 
-    static String convertPropositionsToString(List<MessagingProposition> messagingPropositions) {
+    static String convertPropositionsToString(List<Proposition> propositions) {
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            objectOutputStream.writeObject(messagingPropositions);
+            objectOutputStream.writeObject(propositions);
             objectOutputStream.defaultWriteObject();
             return objectOutputStream.toString();
         } catch (Exception e) {
@@ -700,11 +700,11 @@ public class MessagingTestUtils {
         return feedConsequences;
     }
 
-    static List<MessagingPropositionItem> createMessagingPropositionItemList(int size) {
+    static List<PropositionItem> createMessagingPropositionItemList(int size) {
         List<RuleConsequence> consequences = createFeedConsequenceList(size);
-        List<MessagingPropositionItem> propositionItemList = new ArrayList<>();
+        List<PropositionItem> propositionItemList = new ArrayList<>();
         for (RuleConsequence consequence : consequences) {
-            propositionItemList.add(MessagingPropositionItem.fromRuleConsequence(consequence));
+            propositionItemList.add(PropositionItem.fromRuleConsequence(consequence));
         }
         return propositionItemList;
     }
