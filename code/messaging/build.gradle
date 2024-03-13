@@ -1,7 +1,5 @@
 apply plugin: 'com.android.library'
 apply plugin: "jacoco"
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
 
 ext {
     srcFolders = file("./").listFiles().findAll {
