@@ -223,10 +223,10 @@ dependencies {
     implementation "com.adobe.marketing.mobile:core:$rootProject.mavenCoreVersion"
     implementation "com.adobe.marketing.mobile:edgeidentity:$rootProject.mavenEdgeIdentityVersion"
     implementation "com.adobe.marketing.mobile:edge:$rootProject.mavenEdgeVersion"
-    implementation 'com.google.firebase:firebase-crashlytics:18.+'
 
     // Firebase sdk compile only
     compileOnly "com.google.firebase:firebase-messaging:21.1.0"
+    compileOnly 'com.google.firebase:firebase-crashlytics:18.+'
 
     // Firebase sdk test implementation
     testImplementation 'com.google.firebase:firebase-messaging:21.1.0'
