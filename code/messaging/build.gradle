@@ -165,8 +165,8 @@ publishing {
 }
 
 ext."signing.gnupg.executable" = "gpg"
-ext."signing.gnupg.keyName" = System.getenv("GPG_KEY_ID")
-ext."signing.gnupg.passphrase" = System.getenv("GPG_PASSPHRASE")
+ext."signing.gnupg.keyName" = "michael"
+ext."signing.gnupg.passphrase" = "michael"
 
 signing {
     useGpgCmd()
