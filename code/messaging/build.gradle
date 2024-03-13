@@ -1,7 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: "jacoco"
 apply plugin: 'maven-publish'
-apply plugin: 'signing'
 
 ext {
     srcFolders = file("./").listFiles().findAll {
@@ -164,19 +163,6 @@ publishing {
     }
 }
 
-ext."signing.gnupg.executable" = "gpg"
-ext."signing.gnupg.keyName" = "michael"
-ext."signing.gnupg.passphrase" = "michael"
-
-signing {
-    useGpgCmd()
-    required {
-        tasks.withType(PublishToMavenRepository).find {
-            gradle.taskGraph.hasTask it
-        }
-    }
-    sign publishing.publications
-}
 
 task unitTestsCoverageReport(type: JacocoReport, dependsOn: "testPhoneDebugUnitTest") {
     def excludeRegex = ['**/ADB*.class', '**/BuildConfig.class']
