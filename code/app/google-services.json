@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "334231159772",
+    "project_id": "quickstart-1613744381529",
+    "storage_bucket": "quickstart-1613744381529.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:334231159772:android:152622c862841396aa8519",
+        "android_client_info": {
+          "package_name": "info.michaelschwartz.aepsdk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "334231159772-gellf2rhps6lrsl4sjdubn4q5j7p8h5b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8tWc4hoY8RtdT5VESNs3sSQ1CHo0ru-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "334231159772-gellf2rhps6lrsl4sjdubn4q5j7p8h5b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "334231159772-e0sk6tjk2bid9rskbgjl6g1qjh9skqb5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.name.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
