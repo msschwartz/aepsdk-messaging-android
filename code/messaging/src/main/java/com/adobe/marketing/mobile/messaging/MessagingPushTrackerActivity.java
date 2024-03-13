@@ -134,9 +134,13 @@ public class MessagingPushTrackerActivity extends Activity {
      * @param uri the uri to open
      */
     private void openUri(final String uri) {
-        final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addNextIntentWithParentStack(intent);
-        stackBuilder.startActivities();
+        try {
+            final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+            stackBuilder.addNextIntentWithParentStack(intent);
+            stackBuilder.startActivities();
+        } catch (Exception e) {
+            Log.warning(MessagingPushConstants.LOG_TAG, SELF_TAG, "Start activity failed: %s ", e.getMessage());
+        }
     }
 }
